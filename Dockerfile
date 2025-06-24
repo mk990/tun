@@ -29,6 +29,5 @@ COPY --from=builder /app/* .
 # Expose port (update to match the app's port if needed)
 EXPOSE 8080
 
-# Run the app
-CMD ["./backhaul"]
+ENTRYPOINT []
 
