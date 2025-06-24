@@ -24,7 +24,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the built binary from builder stage
-COPY --from=builder /app/* .
+COPY --from=builder /app/bin/* .
 
 # Add /app to PATH
 ENV PATH="/app:${PATH}"
