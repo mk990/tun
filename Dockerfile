@@ -26,6 +26,9 @@ WORKDIR /app
 # Copy the built binary from builder stage
 COPY --from=builder /app/* .
 
+# Add /app to PATH
+ENV PATH="/app:${PATH}"
+
 # Expose port (update to match the app's port if needed)
 EXPOSE 8080
 
