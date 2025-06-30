@@ -17,6 +17,17 @@ RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transp
     CGO_ENABLED=0 go build -ldflags="-X main.lyrebirdVersion=0.6.1" ./cmd/lyrebird &&\
     mv lyrebird /app/bin/lyrebird
 
+# Stage 1: Build WaterWall
+FROM ubuntu:24.04 AS waterwall-builder
+
+RUN apt-get update && \
+    apt-get install -y git cmake ninja-build build-essential
+
+WORKDIR /waterwall
+RUN git clone https://github.com/radkesvat/WaterWall.git . && \
+    cmake -B build -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build
+
 # Stage 2: Run the app
 FROM alpine:latest
 
@@ -25,6 +36,7 @@ WORKDIR /app
 
 # Copy the built binary from builder stage
 COPY --from=builder /app/bin/* .
+COPY --from=waterwall-builder /waterwall/build/ww /app/ww
 
 # Add /app to PATH
 ENV PATH="/app:${PATH}"
