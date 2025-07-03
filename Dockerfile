@@ -37,7 +37,7 @@ WORKDIR /app
 
 # Copy the built binary from builder stage
 COPY --from=builder /app/bin/* .
-COPY --from=waterwall-builder /waterWall/WaterWall/build/Waterwall .
+COPY --from=waterwall-builder /waterwall/WaterWall/build/Waterwall .
 
 # Add /app to PATH
 ENV PATH="/app:${PATH}"
