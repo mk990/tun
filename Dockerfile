@@ -9,12 +9,12 @@ WORKDIR /app
 RUN mkdir /app/bin
 
 # Clone the repo
-RUN git clone https://github.com/musixal/backhaul.git &&\
-    cd backhaul &&\
+RUN git clone https://github.com/musixal/backhaul.git && \
+    cd backhaul && \
     go build -o /app/bin/backhaul
-RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird.git &&\
-    cd lyrebird &&\
-    CGO_ENABLED=0 go build -ldflags="-X main.lyrebirdVersion=0.6.1" ./cmd/lyrebird &&\
+RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird.git && \
+    cd lyrebird && \
+    CGO_ENABLED=0 go build -ldflags="-X main.lyrebirdVersion=0.6.1" ./cmd/lyrebird && \
     mv lyrebird /app/bin/lyrebird
 
 # Stage 1: Build WaterWall
@@ -24,7 +24,8 @@ RUN apt-get update && \
     apt-get install -y git cmake ninja-build build-essential
 
 WORKDIR /waterwall
-RUN git clone https://github.com/radkesvat/WaterWall.git . && \
+RUN git clone https://github.com/radkesvat/WaterWall.git && \
+    cd WaterWall && \
     cmake -B build -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build
 
@@ -36,7 +37,7 @@ WORKDIR /app
 
 # Copy the built binary from builder stage
 COPY --from=builder /app/bin/* .
-COPY --from=waterwall-builder /waterwall/build/ww /app/ww
+COPY --from=waterwall-builder /waterWall/build/Waterwall .
 
 # Add /app to PATH
 ENV PATH="/app:${PATH}"
