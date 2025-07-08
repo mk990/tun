@@ -29,6 +29,18 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
     cmake -B build -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build
 
+# Stage 3: Build rstun
+FROM rust:1.88 AS rstun-builder
+
+RUN apt-get update && apt-get install -y git
+
+WORKDIR /rstun
+RUN git clone https://github.com/neevek/rstun.git . && \
+    cargo build --all-features --release && \
+    mkdir -p rstun-linux-x86_64 && \
+    mv target/release/rstunc ./rstun-linux-x86_64/ && \
+    mv target/release/rstund ./rstun-linux-x86_64/
+
 # Stage 2: Run the app
 FROM alpine:latest
 
@@ -38,6 +50,8 @@ WORKDIR /app
 # Copy the built binary from builder stage
 COPY --from=builder /app/bin/* .
 COPY --from=waterwall-builder /waterwall/WaterWall/build/Waterwall .
+COPY --from=rstun-builder /rstun/rstun-linux-x86_64/* .
+
 
 # Add /app to PATH
 ENV PATH="/app:${PATH}"
