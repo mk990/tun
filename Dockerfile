@@ -34,7 +34,7 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
     cmake --build build
 
 # Stage 3: Build rstun
-FROM rust:1.79-slim AS rstun-builder
+FROM rust:1.88-slim AS rstun-builder
 
 RUN apt-get update && \
     apt-get install -y git musl-tools && \
