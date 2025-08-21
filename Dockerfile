@@ -12,10 +12,16 @@ RUN mkdir /app/bin
 RUN git clone https://github.com/musixal/backhaul.git && \
     cd backhaul && \
     go build -o /app/bin/backhaul
+
 RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird.git && \
     cd lyrebird && \
     CGO_ENABLED=0 go build -ldflags="-X main.lyrebirdVersion=0.6.1" ./cmd/lyrebird && \
     mv lyrebird /app/bin/lyrebird
+
+RUN git clone https://github.com/Diniboy1123/usque.git && \
+    cd usque && \
+    go build -o usque -ldflags="-s -w" . && \
+    mv usque /app/bin/usque
 
 # Stage 2: Build WaterWall
 FROM ubuntu:24.04 AS waterwall-builder
