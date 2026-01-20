@@ -47,7 +47,7 @@ RUN apt-get update && \
     rustup target add x86_64-unknown-linux-musl
 
 WORKDIR /rstun
-RUN git clone https://github.com/neevek/rstun.git . && \
+RUN git clone https://github.com/neevek/rstun.git && \
     cargo build --target x86_64-unknown-linux-musl --all-features --release && \
     mkdir -p rstun-linux-x86_64 && \
     mv target/x86_64-unknown-linux-musl/release/rstunc ./rstun-linux-x86_64/ && \
@@ -55,7 +55,7 @@ RUN git clone https://github.com/neevek/rstun.git . && \
 
 
 RUN git clone https://github.com/Mygod/slipstream-rust.git slipstream-rust && \
-    ls -la && git submodule update --init --recursive && \
+    ls -la && cd slipstream-rust && git submodule update --init --recursive && \
     cargo build -p slipstream-client -p slipstream-server --target x86_64-unknown-linux-musl --all-features --release && \
     mkdir -p slipstream-rust-linux-x86_64
 
