@@ -1,5 +1,5 @@
 # Stage 1: Build the Go app
-FROM golang:1.23-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 # Install git
 RUN apk add --no-cache git
@@ -54,7 +54,7 @@ RUN git clone https://github.com/neevek/rstun.git . && \
     mv target/x86_64-unknown-linux-musl/release/rstund ./rstun-linux-x86_64/
 
 
-RUN git clone https://github.com/Mygod/slipstream-rust.git  slipstream-rust && \
+RUN git clone https://github.com/Mygod/slipstream-rust.git . && \
     git submodule update --init --recursive && \
     cargo build -p slipstream-client -p slipstream-server --target x86_64-unknown-linux-musl --all-features --release && \
     mkdir -p slipstream-rust-linux-x86_64
