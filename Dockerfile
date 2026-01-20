@@ -46,6 +46,12 @@ RUN apt-get update && \
     apt-get install -y git musl-tools && \
     rustup target add x86_64-unknown-linux-musl
 
+RUN git clone https://github.com/Mygod/slipstream-rust.git slipstream-rust && \
+    cd slipstream-rust && \
+    git submodule update --init --recursive && \
+    cargo build -p slipstream-client -p slipstream-server --target x86_64-unknown-linux-musl --all-features --release && \
+    mkdir -p slipstream-rust-linux-x86_64
+
 WORKDIR /rstun
 RUN git clone https://github.com/neevek/rstun.git && \
     cd rustun && \
@@ -55,11 +61,6 @@ RUN git clone https://github.com/neevek/rstun.git && \
     mv target/x86_64-unknown-linux-musl/release/rstund ./rstun-linux-x86_64/
 
 
-RUN git clone https://github.com/Mygod/slipstream-rust.git slipstream-rust && \
-    cd slipstream-rust && \
-    git submodule update --init --recursive && \
-    cargo build -p slipstream-client -p slipstream-server --target x86_64-unknown-linux-musl --all-features --release && \
-    mkdir -p slipstream-rust-linux-x86_64
 
 # Stage 4: Run the app
 FROM alpine:latest
