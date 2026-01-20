@@ -43,7 +43,7 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
 FROM rust:1.88-slim AS rstun-builder
 
 RUN apt-get update && \
-    apt-get install -y git musl-tools && \
+    apt-get install -y git musl-tools build-essential cmake libssl-dev pkg-config && \
     rustup target add x86_64-unknown-linux-musl
 
 RUN git clone https://github.com/Mygod/slipstream-rust.git slipstream-rust && \
