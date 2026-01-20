@@ -48,6 +48,7 @@ RUN apt-get update && \
 
 WORKDIR /rstun
 RUN git clone https://github.com/neevek/rstun.git && \
+    cd rustun && \
     cargo build --target x86_64-unknown-linux-musl --all-features --release && \
     mkdir -p rstun-linux-x86_64 && \
     mv target/x86_64-unknown-linux-musl/release/rstunc ./rstun-linux-x86_64/ && \
@@ -55,7 +56,8 @@ RUN git clone https://github.com/neevek/rstun.git && \
 
 
 RUN git clone https://github.com/Mygod/slipstream-rust.git slipstream-rust && \
-    ls -la && cd slipstream-rust && git submodule update --init --recursive && \
+    cd slipstream-rust && \
+    git submodule update --init --recursive && \
     cargo build -p slipstream-client -p slipstream-server --target x86_64-unknown-linux-musl --all-features --release && \
     mkdir -p slipstream-rust-linux-x86_64
 
@@ -68,7 +70,7 @@ WORKDIR /app
 # Copy the built binary from builder stage
 COPY --from=builder /app/bin/* .
 COPY --from=waterwall-builder /waterwall/WaterWall/build/Waterwall .
-COPY --from=rstun-builder /rstun/rstun-linux-x86_64/* .
+COPY --from=rstun-builder /rstun/rstun/rstun-linux-x86_64/* .
 
 
 # Add /app to PATH
