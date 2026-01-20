@@ -54,7 +54,7 @@ RUN git clone https://github.com/neevek/rstun.git . && \
     mv target/x86_64-unknown-linux-musl/release/rstund ./rstun-linux-x86_64/
 
 
-RUN git clone https://github.com/Mygod/slipstream-rust.git . && \
+RUN git clone https://github.com/Mygod/slipstream-rust.git slipstream-rust && \
     ls -la && git submodule update --init --recursive && \
     cargo build -p slipstream-client -p slipstream-server --target x86_64-unknown-linux-musl --all-features --release && \
     mkdir -p slipstream-rust-linux-x86_64
