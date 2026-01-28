@@ -1,5 +1,5 @@
-# Stage 1: Build the Go app
-FROM golang:1.24-alpine AS builder
+# Build the Go app
+FROM golang:1.24-alpine AS go-builder
 
 # Install git
 RUN apk add --no-cache git
@@ -23,11 +23,11 @@ RUN git clone https://github.com/Diniboy1123/usque.git && \
     go build -o usque -ldflags="-s -w" . && \
     mv usque /app/bin/usque
 
-# Stage 2: Build WaterWall
-FROM ubuntu:24.04 AS waterwall-builder
+# Build cmake
+FROM ubuntu:24.04 AS cmake-builder
 
 RUN apt-get update && \
-    apt-get install -y git cmake ninja-build build-essential
+    apt-get install -y git curl cmake ninja-build build-essential libssl-dev zlib1g-dev
 
 WORKDIR /waterwall
 RUN git clone https://github.com/radkesvat/WaterWall.git && \
@@ -39,18 +39,18 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
     -DCMAKE_CXX_FLAGS="-static" && \
     cmake --build build
 
-# Stage 3: Build rstun
-FROM rust:1.88-slim AS rstun-builder
+WORKDIR /MTproxy
+RUN git clone https://github.com/TelegramMessenger/MTProxy && \
+    cd MTProxy && \
+    make
+
+# Build Rust
+FROM rust:1.88-slim AS rust-builder
 
 RUN apt-get update && \
     apt-get install -y git musl-tools cmake libssl-dev && \
     rustup target add x86_64-unknown-linux-musl
 
-RUN git clone https://github.com/Mygod/slipstream-rust.git slipstream-rust && \
-    cd slipstream-rust && \
-    git submodule update --init --recursive && \
-    cargo build -p slipstream-client -p slipstream-server --target x86_64-unknown-linux-musl --all-features --release && \
-    mkdir -p slipstream-rust-linux-x86_64
 
 WORKDIR /rstun
 RUN git clone https://github.com/neevek/rstun.git && \
@@ -69,9 +69,10 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the built binary from builder stage
-COPY --from=builder /app/bin/* .
-COPY --from=waterwall-builder /waterwall/WaterWall/build/Waterwall .
-COPY --from=rstun-builder /rstun/rstun/rstun-linux-x86_64/* .
+COPY --from=go-builder /app/bin/* .
+COPY --from=cmake-builder /waterwall/WaterWall/build/Waterwall .
+COPY --from=cmake-builder /MTproxy/MTproxy/cd objs/bin/ .
+COPY --from=rust-builder /rstun/rstun/rstun-linux-x86_64/* .
 
 
 # Add /app to PATH
