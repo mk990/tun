@@ -59,7 +59,7 @@ RUN git clone https://github.com/TelegramMessenger/MTProxy && \
 FROM rust:1.88-alpine AS rust-builder
 
 # Install dependencies
-RUN apk add --no-cache bash git musl-dev openssl-dev pkgconf cmake build-base
+RUN apk add --no-cache bash git musl-dev openssl-dev openssl-libs-static pkgconf cmake build-base
 
 WORKDIR /app
 RUN mkdir /app/bin
