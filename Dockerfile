@@ -49,13 +49,13 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
     -DCMAKE_C_FLAGS="-static" \
     -DCMAKE_CXX_FLAGS="-static" && \
     cmake --build build && \
-    mv objs/bin/mtproto-proxy /app/bin
+    mv build/Waterwall /app/bin
 
 
 RUN git clone https://github.com/TelegramMessenger/MTProxy && \
     cd MTProxy && \
     make && \
-    mv build/Waterwall /app/bin
+    mv objs/bin/mtproto-proxy /app/bin
 
 # Build Rust
 FROM rust:1.88-slim AS rust-builder
