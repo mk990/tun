@@ -88,7 +88,6 @@ RUN git clone https://github.com/neevek/rstun.git && \
 # Run the app
 FROM alpine:latest
 
-RUN apk add --no-cache ca-certificates
 # Set working directory
 WORKDIR /app
 
