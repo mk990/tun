@@ -76,14 +76,15 @@ RUN git clone https://github.com/neevek/rstun.git && \
 RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     cd slipstream-rust && \
     git submodule update --init --recursive && \
-    cargo build -p slipstream-client -p slipstream-server && \
-    mv target/debug/slipstream-server /app/bin && \
-    mv target/debug/slipstream-client /app/bin
+    cargo build --release --target x86_64-unknown-linux-musl -p slipstream-client -p slipstream-server && \
+    mv target/x86_64-unknown-linux-musl/release/slipstream-server /app/bin && \
+    mv target/x86_64-unknown-linux-musl/release/slipstream-client /app/bin
 
 
 # Run the app
 FROM alpine:latest
 
+RUN apk add --no-cache ca-certificates
 # Set working directory
 WORKDIR /app
 
