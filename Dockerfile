@@ -74,6 +74,10 @@ RUN git clone https://github.com/neevek/rstun.git && \
     mv target/x86_64-unknown-linux-musl/release/rstunc /app/bin && \
     mv target/x86_64-unknown-linux-musl/release/rstund /app/bin
 
+ENV OPENSSL_STATIC=1
+ENV OPENSSL_NO_PKG_CONFIG=1
+ENV OPENSSL_NO_VENDOR=0
+
 RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     cd slipstream-rust && \
     git submodule update --init --recursive && \
