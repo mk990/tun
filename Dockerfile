@@ -59,13 +59,14 @@ RUN git clone https://github.com/TelegramMessenger/MTProxy && \
 FROM rust:1.88-alpine AS rust-builder
 
 # Install dependencies
-RUN apk add --no-cache bash git musl-dev openssl openssl-dev pkgconf cmake build-base
+RUN apk add --no-cache bash git musl-dev openssl-dev libssl1.1-dev pkgconf cmake build-base
 
 WORKDIR /app
 RUN mkdir /app/bin
 
 # Enable static OpenSSL linking
 ENV OPENSSL_STATIC=1
+ENV OPENSSL_DIR=/usr/lib/ssl
 
 # Build rstun
 RUN git clone https://github.com/neevek/rstun.git && \
