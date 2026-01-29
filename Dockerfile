@@ -60,6 +60,7 @@ RUN git clone https://github.com/TelegramMessenger/MTProxy && \
 FROM rust:1.88-slim AS rust-builder
 
 WORKDIR /app
+
 RUN mkdir /app/bin
 
 RUN apt-get update && \
