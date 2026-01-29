@@ -23,13 +23,24 @@ RUN git clone https://github.com/Diniboy1123/usque.git && \
     go build -o usque -ldflags="-s -w" . && \
     mv usque /app/bin/usque
 
+RUN git clone https://repo.or.cz/dnstt.git && \
+    cd dnstt/dnstt-server && \
+    go build && \
+    mv dnstt-server /app/bin/dnstt-server && \
+    cd ../dnstt-client && \
+    go build && \
+    mv dnstt-client /app/bin/dnstt-client
+
 # Build cmake
 FROM ubuntu:24.04 AS cmake-builder
 
 RUN apt-get update && \
     apt-get install -y git curl cmake ninja-build build-essential libssl-dev zlib1g-dev
 
-WORKDIR /waterwall
+WORKDIR /app
+
+RUN mkdir /app/bin
+
 RUN git clone https://github.com/radkesvat/WaterWall.git && \
     cd WaterWall && \
     cmake -B build \
@@ -37,12 +48,14 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
     -DCMAKE_EXE_LINKER_FLAGS="-static" \
     -DCMAKE_C_FLAGS="-static" \
     -DCMAKE_CXX_FLAGS="-static" && \
-    cmake --build build
+    cmake --build build && \
+    mv objs/bin/mtproto-proxy /app/bin
 
-WORKDIR /MTproxy
+
 RUN git clone https://github.com/TelegramMessenger/MTProxy && \
     cd MTProxy && \
-    make
+    make && \
+    mv build/Waterwall /app/bin
 
 # Build Rust
 FROM rust:1.88-slim AS rust-builder
@@ -69,8 +82,7 @@ WORKDIR /app
 
 # Copy the built binary from builder stage
 COPY --from=go-builder /app/bin/* .
-COPY --from=cmake-builder /waterwall/WaterWall/build/Waterwall .
-COPY --from=cmake-builder /MTproxy/MTproxy/objs/bin/mtproto-proxy .
+COPY --from=cmake-builder /app/bin/* .
 COPY --from=rust-builder /rstun/rstun/rstun-linux-x86_64/* .
 
 
