@@ -63,7 +63,7 @@ WORKDIR /app
 RUN mkdir /app/bin
 
 RUN apt-get update && \
-    apt-get install -y git musl-tools cmake libssl-dev && \
+    apt-get install -y git musl-tools cmake libssl-dev pkg-config && \
     rustup target add x86_64-unknown-linux-musl
 
 RUN git clone https://github.com/neevek/rstun.git && \
@@ -79,7 +79,6 @@ RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     cargo build -p slipstream-client -p slipstream-server && \
     mv target/debug/slipstream-server /app/bin && \
     mv target/debug/slipstream-client /app/bin
-
 
 
 # Run the app
