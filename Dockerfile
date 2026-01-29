@@ -56,20 +56,16 @@ RUN git clone https://github.com/TelegramMessenger/MTProxy && \
     make && \
     mv objs/bin/mtproto-proxy /app/bin
 
-# Build Rust
-FROM rust:1.88-slim AS rust-builder
+FROM rust:1.88-alpine AS rust-builder
+
+# Install dependencies
+RUN apk add --no-cache git musl-dev openssl openssl-dev pkgconf cmake build-base
 
 WORKDIR /app
 RUN mkdir /app/bin
 
-# Install required packages
-RUN apt-get update && \
-    apt-get install -y git musl-tools cmake libssl-dev pkg-config build-essential && \
-    rustup target add x86_64-unknown-linux-musl
-
-# Set OpenSSL static linking for musl
+# Enable static OpenSSL linking
 ENV OPENSSL_STATIC=1
-ENV OPENSSL_NO_PKG_CONFIG=1
 
 # Build rstun
 RUN git clone https://github.com/neevek/rstun.git && \
@@ -79,7 +75,7 @@ RUN git clone https://github.com/neevek/rstun.git && \
     mv target/x86_64-unknown-linux-musl/release/rstund /app/bin && \
     cd .. && rm -rf rstun
 
-# Build slipstream-rust
+# Build slipstream
 RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     cd slipstream-rust && \
     git submodule update --init --recursive && \
