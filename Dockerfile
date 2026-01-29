@@ -38,7 +38,6 @@ RUN apt-get update && \
     apt-get install -y git curl cmake ninja-build build-essential libssl-dev zlib1g-dev
 
 WORKDIR /app
-
 RUN mkdir /app/bin
 
 RUN git clone https://github.com/radkesvat/WaterWall.git && \
@@ -60,18 +59,27 @@ RUN git clone https://github.com/TelegramMessenger/MTProxy && \
 # Build Rust
 FROM rust:1.88-slim AS rust-builder
 
+WORKDIR /app
+RUN mkdir /app/bin
+
 RUN apt-get update && \
     apt-get install -y git musl-tools cmake libssl-dev && \
     rustup target add x86_64-unknown-linux-musl
 
-
-WORKDIR /rstun
 RUN git clone https://github.com/neevek/rstun.git && \
     cd rstun && \
     cargo build --target x86_64-unknown-linux-musl --all-features --release && \
     mkdir -p rstun-linux-x86_64 && \
-    mv target/x86_64-unknown-linux-musl/release/rstunc ./rstun-linux-x86_64/ && \
-    mv target/x86_64-unknown-linux-musl/release/rstund ./rstun-linux-x86_64/
+    mv target/x86_64-unknown-linux-musl/release/rstunc /app/bin && \
+    mv target/x86_64-unknown-linux-musl/release/rstund /app/bin
+
+RUN git clone https://github.com/Mygod/slipstream-rust.git && \
+    cd slipstream-rust && \
+    git submodule update --init --recursive && \
+    cargo build -p slipstream-client -p slipstream-server && \
+    mv target/debug/slipstream-server /app/bin && \
+    mv target/debug/slipstream-client /app/bin
+
 
 
 # Run the app
@@ -83,8 +91,7 @@ WORKDIR /app
 # Copy the built binary from builder stage
 COPY --from=go-builder /app/bin/* .
 COPY --from=cmake-builder /app/bin/* .
-COPY --from=rust-builder /rstun/rstun/rstun-linux-x86_64/* .
-
+COPY --from=rust-builder /app/bin/* .
 
 # Add /app to PATH
 ENV PATH="/app:${PATH}"
