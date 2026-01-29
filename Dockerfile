@@ -54,15 +54,14 @@ RUN apt-get update && \
 
 WORKDIR /rstun
 RUN git clone https://github.com/neevek/rstun.git && \
-    cd rustun && \
+    cd rstun && \
     cargo build --target x86_64-unknown-linux-musl --all-features --release && \
     mkdir -p rstun-linux-x86_64 && \
     mv target/x86_64-unknown-linux-musl/release/rstunc ./rstun-linux-x86_64/ && \
     mv target/x86_64-unknown-linux-musl/release/rstund ./rstun-linux-x86_64/
 
 
-
-# Stage 4: Run the app
+# Run the app
 FROM alpine:latest
 
 # Set working directory
@@ -71,7 +70,7 @@ WORKDIR /app
 # Copy the built binary from builder stage
 COPY --from=go-builder /app/bin/* .
 COPY --from=cmake-builder /waterwall/WaterWall/build/Waterwall .
-COPY --from=cmake-builder /MTproxy/MTproxy/cd objs/bin/ .
+COPY --from=cmake-builder /MTproxy/MTproxy/objs/bin/mtproto-proxy .
 COPY --from=rust-builder /rstun/rstun/rstun-linux-x86_64/* .
 
 
