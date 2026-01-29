@@ -60,31 +60,33 @@ RUN git clone https://github.com/TelegramMessenger/MTProxy && \
 FROM rust:1.88-slim AS rust-builder
 
 WORKDIR /app
-
 RUN mkdir /app/bin
 
+# Install required packages
 RUN apt-get update && \
     apt-get install -y git musl-tools cmake libssl-dev pkg-config build-essential && \
     rustup target add x86_64-unknown-linux-musl
 
+# Set OpenSSL static linking for musl
+ENV OPENSSL_STATIC=1
+ENV OPENSSL_NO_PKG_CONFIG=1
+
+# Build rstun
 RUN git clone https://github.com/neevek/rstun.git && \
     cd rstun && \
     cargo build --target x86_64-unknown-linux-musl --all-features --release && \
-    mkdir -p rstun-linux-x86_64 && \
     mv target/x86_64-unknown-linux-musl/release/rstunc /app/bin && \
-    mv target/x86_64-unknown-linux-musl/release/rstund /app/bin
+    mv target/x86_64-unknown-linux-musl/release/rstund /app/bin && \
+    cd .. && rm -rf rstun
 
-ENV OPENSSL_STATIC=1
-ENV OPENSSL_NO_PKG_CONFIG=1
-ENV OPENSSL_NO_VENDOR=0
-
+# Build slipstream-rust
 RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     cd slipstream-rust && \
     git submodule update --init --recursive && \
     cargo build --release --target x86_64-unknown-linux-musl -p slipstream-client -p slipstream-server && \
     mv target/x86_64-unknown-linux-musl/release/slipstream-server /app/bin && \
-    mv target/x86_64-unknown-linux-musl/release/slipstream-client /app/bin
-
+    mv target/x86_64-unknown-linux-musl/release/slipstream-client /app/bin && \
+    cd .. && rm -rf slipstream-rust
 
 # Run the app
 FROM alpine:latest
