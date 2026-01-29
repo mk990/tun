@@ -53,7 +53,7 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
 
 RUN git clone https://github.com/TelegramMessenger/MTProxy && \
     cd MTProxy && \
-    make && \
+    make STATIC=1 && \
     mv objs/bin/mtproto-proxy /app/bin
 
 FROM rust:1.88-alpine AS rust-builder
