@@ -86,7 +86,7 @@ RUN git clone https://github.com/neevek/rstun.git && \
     cd .. && rm -rf rstun
 
 # Run the app
-FROM alpine:latest
+FROM debian:bookworm-slim
 
 # Set working directory
 WORKDIR /app
