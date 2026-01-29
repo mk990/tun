@@ -66,15 +66,7 @@ RUN mkdir /app/bin
 
 # Enable static OpenSSL linking
 ENV OPENSSL_STATIC=1
-ENV OPENSSL_DIR=/usr/include/openssl
-
-# Build rstun
-RUN git clone https://github.com/neevek/rstun.git && \
-    cd rstun && \
-    cargo build --target x86_64-unknown-linux-musl --all-features --release && \
-    mv target/x86_64-unknown-linux-musl/release/rstunc /app/bin && \
-    mv target/x86_64-unknown-linux-musl/release/rstund /app/bin && \
-    cd .. && rm -rf rstun
+ENV OPENSSL_DIR=/usr
 
 # Build slipstream
 RUN git clone https://github.com/Mygod/slipstream-rust.git && \
@@ -84,6 +76,14 @@ RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     mv target/x86_64-unknown-linux-musl/release/slipstream-server /app/bin && \
     mv target/x86_64-unknown-linux-musl/release/slipstream-client /app/bin && \
     cd .. && rm -rf slipstream-rust
+
+# Build rstun
+RUN git clone https://github.com/neevek/rstun.git && \
+    cd rstun && \
+    cargo build --target x86_64-unknown-linux-musl --all-features --release && \
+    mv target/x86_64-unknown-linux-musl/release/rstunc /app/bin && \
+    mv target/x86_64-unknown-linux-musl/release/rstund /app/bin && \
+    cd .. && rm -rf rstun
 
 # Run the app
 FROM alpine:latest
