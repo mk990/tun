@@ -63,7 +63,7 @@ WORKDIR /app
 RUN mkdir /app/bin
 
 RUN apt-get update && \
-    apt-get install -y git musl-tools cmake libssl-dev pkg-config && \
+    apt-get install -y git musl-tools cmake libssl-dev pkg-config build-essential && \
     rustup target add x86_64-unknown-linux-musl
 
 RUN git clone https://github.com/neevek/rstun.git && \
