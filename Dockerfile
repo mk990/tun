@@ -32,28 +32,39 @@ RUN git clone https://repo.or.cz/dnstt.git && \
     mv dnstt-client /app/bin/dnstt-client
 
 # Build cmake
-FROM ubuntu:24.04 AS cmake-builder
+FROM alpine:3.22 AS cmake-builder
 
-RUN apt-get update && \
-    apt-get install -y git curl cmake ninja-build build-essential libssl-dev zlib1g-dev
+RUN apk add --no-cache \
+    git \
+    curl \
+    cmake \
+    ninja \
+    build-base \
+    musl-dev \
+    zlib-dev \
+    openssl-dev \
+    bash
 
 WORKDIR /app
-RUN mkdir /app/bin
+RUN mkdir -p /app/bin
 
+# ---------- WaterWall ----------
 RUN git clone https://github.com/radkesvat/WaterWall.git && \
     cd WaterWall && \
+    CC=musl-gcc CXX=musl-g++ \
     cmake -B build \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_EXE_LINKER_FLAGS="-static" \
-    -DCMAKE_C_FLAGS="-static" \
-    -DCMAKE_CXX_FLAGS="-static" && \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_FLAGS="-static" \
+      -DCMAKE_CXX_FLAGS="-static" \
+      -DCMAKE_EXE_LINKER_FLAGS="-static" && \
     cmake --build build && \
     mv build/Waterwall /app/bin
 
-
+# ---------- MTProxy ----------
 RUN git clone https://github.com/TelegramMessenger/MTProxy && \
     cd MTProxy && \
-    make STATIC=1 && \
+    make clean && \
+    make STATIC=1 CC=musl-gcc && \
     mv objs/bin/mtproto-proxy /app/bin
 
 FROM rust:1.88-alpine AS rust-builder
