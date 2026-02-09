@@ -87,6 +87,7 @@ RUN git clone https://github.com/neevek/rstun.git && \
 
 # Run the app
 FROM debian:trixie-slim
+RUN apt update && apt install -y wget
 
 # Set working directory
 WORKDIR /app
