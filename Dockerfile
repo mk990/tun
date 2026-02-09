@@ -53,10 +53,10 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
     cd WaterWall && \
     CC=musl-gcc CXX=musl-g++ \
     cmake -B build \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_C_FLAGS="-static" \
-      -DCMAKE_CXX_FLAGS="-static" \
-      -DCMAKE_EXE_LINKER_FLAGS="-static" && \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS="-static" \
+    -DCMAKE_CXX_FLAGS="-static" \
+    -DCMAKE_EXE_LINKER_FLAGS="-static" && \
     cmake --build build && \
     mv build/Waterwall /app/bin
 
@@ -106,6 +106,9 @@ WORKDIR /app
 COPY --from=go-builder /app/bin/* .
 COPY --from=cmake-builder /app/bin/* .
 COPY --from=rust-builder /app/bin/* .
+
+RUN wget https://raw.githubusercontent.com/Psiphon-Labs/psiphon-tunnel-core-binaries/refs/heads/master/linux/psiphon-tunnel-core-x86_64 && \
+    chmod 755 psiphon-tunnel-core-x86_64
 
 # Add /app to PATH
 ENV PATH="/app:${PATH}"
