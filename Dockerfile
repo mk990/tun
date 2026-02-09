@@ -32,39 +32,28 @@ RUN git clone https://repo.or.cz/dnstt.git && \
     mv dnstt-client /app/bin/dnstt-client
 
 # Build cmake
-FROM alpine:3.22 AS cmake-builder
+FROM debian:trixie-slim AS cmake-builder
 
-RUN apk add --no-cache \
-    git \
-    curl \
-    cmake \
-    ninja \
-    build-base \
-    musl-dev \
-    zlib-dev \
-    openssl-dev \
-    bash
+RUN apt-get update && \
+    apt-get install -y git curl cmake ninja-build build-essential libssl-dev zlib1g-dev
 
 WORKDIR /app
-RUN mkdir -p /app/bin
+RUN mkdir /app/bin
 
-# ---------- WaterWall ----------
 RUN git clone https://github.com/radkesvat/WaterWall.git && \
     cd WaterWall && \
-    CC=musl-gcc CXX=musl-g++ \
     cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_EXE_LINKER_FLAGS="-static" \
     -DCMAKE_C_FLAGS="-static" \
-    -DCMAKE_CXX_FLAGS="-static" \
-    -DCMAKE_EXE_LINKER_FLAGS="-static" && \
+    -DCMAKE_CXX_FLAGS="-static" && \
     cmake --build build && \
     mv build/Waterwall /app/bin
 
-# ---------- MTProxy ----------
+
 RUN git clone https://github.com/TelegramMessenger/MTProxy && \
     cd MTProxy && \
-    make clean && \
-    make STATIC=1 CC=musl-gcc && \
+    make && \
     mv objs/bin/mtproto-proxy /app/bin
 
 FROM rust:1.88-alpine AS rust-builder
@@ -97,7 +86,7 @@ RUN git clone https://github.com/neevek/rstun.git && \
     cd .. && rm -rf rstun
 
 # Run the app
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 # Set working directory
 WORKDIR /app
