@@ -51,11 +51,6 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
     mv build/Waterwall /app/bin
 
 
-RUN git clone https://github.com/TelegramMessenger/MTProxy && \
-    cd MTProxy && \
-    make && \
-    mv objs/bin/mtproto-proxy /app/bin
-
 FROM rust:1.88-alpine AS rust-builder
 
 # Install dependencies
@@ -86,8 +81,7 @@ RUN git clone https://github.com/neevek/rstun.git && \
     cd .. && rm -rf rstun
 
 # Run the app
-FROM debian:trixie-slim
-RUN apt update && apt install -y wget
+FROM alpine:latest
 
 # Set working directory
 WORKDIR /app
