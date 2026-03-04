@@ -76,9 +76,7 @@ RUN git clone https://github.com/Mygod/slipstream-rust.git && \
 RUN git clone https://github.com/neevek/rstun.git && \
     cd rstun && \
     cargo build --target x86_64-unknown-linux-musl --all-features --release && \
-    ls -ltrh target/x86_64-unknown-linux-musl/release && \
-    mv target/x86_64-unknown-linux-musl/release/rstunc /app/bin && \
-    mv target/x86_64-unknown-linux-musl/release/rstund /app/bin && \
+    mv target/x86_64-unknown-linux-musl/release/rstun /app/bin && \
     cd .. && rm -rf rstun
 
 # Run the app
