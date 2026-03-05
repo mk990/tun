@@ -1,5 +1,8 @@
+ARG TARGETARCH
+
 # Build the Go app
 FROM golang:1.24-alpine AS go-builder
+ARG TARGETARCH
 
 # Install git
 RUN apk add --no-cache git
@@ -11,7 +14,7 @@ RUN mkdir /app/bin
 # Clone the repo
 RUN git clone https://github.com/musixal/backhaul.git && \
     cd backhaul && \
-    go build -o /app/bin/backhaul
+    CGO_ENABLED=0 go build -o /app/bin/backhaul
 
 RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird.git && \
     cd lyrebird && \
@@ -20,19 +23,25 @@ RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transp
 
 RUN git clone https://github.com/Diniboy1123/usque.git && \
     cd usque && \
-    go build -o usque -ldflags="-s -w" . && \
+    CGO_ENABLED=0 go build -o usque -ldflags="-s -w" . && \
     mv usque /app/bin/usque
 
 RUN git clone https://repo.or.cz/dnstt.git && \
     cd dnstt/dnstt-server && \
-    go build && \
+    CGO_ENABLED=0 go build && \
     mv dnstt-server /app/bin/dnstt-server && \
     cd ../dnstt-client && \
-    go build && \
+    CGO_ENABLED=0 go build && \
     mv dnstt-client /app/bin/dnstt-client
+
+RUN git clone https://github.com/Psiphon-Labs/psiphon-tunnel-core.git && \
+    cd psiphon-tunnel-core/ConsoleClient && \
+    CGO_ENABLED=0 go build -o psiphon -ldflags="-s -w" . && \
+    mv psiphon /app/bin/psiphon
 
 # Build cmake
 FROM debian:trixie-slim AS cmake-builder
+ARG TARGETARCH
 
 RUN apt-get update && \
     apt-get install -y git curl cmake ninja-build build-essential libssl-dev zlib1g-dev
@@ -52,6 +61,7 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
 
 
 FROM rust:1.88-alpine AS rust-builder
+ARG TARGETARCH
 
 # Install dependencies
 RUN apk add --no-cache bash git musl-dev openssl-dev openssl-libs-static pkgconf cmake build-base
@@ -67,20 +77,21 @@ ENV OPENSSL_DIR=/usr
 RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     cd slipstream-rust && \
     git submodule update --init --recursive && \
-    cargo build --release --target x86_64-unknown-linux-musl -p slipstream-client -p slipstream-server && \
-    mv target/x86_64-unknown-linux-musl/release/slipstream-server /app/bin && \
-    mv target/x86_64-unknown-linux-musl/release/slipstream-client /app/bin && \
+    cargo build --release -p slipstream-client -p slipstream-server && \
+    mv target/release/slipstream-server /app/bin && \
+    mv target/release/slipstream-client /app/bin && \
     cd .. && rm -rf slipstream-rust
 
 # Build rstun
 RUN git clone https://github.com/neevek/rstun.git && \
     cd rstun && \
-    cargo build --target x86_64-unknown-linux-musl --all-features --release && \
-    mv target/x86_64-unknown-linux-musl/release/rstun /app/bin && \
+    cargo build --all-features --release && \
+    mv target/release/rstun /app/bin && \
     cd .. && rm -rf rstun
 
 # Run the app
 FROM alpine:latest
+ARG TARGETARCH
 
 # Set working directory
 WORKDIR /app
@@ -90,9 +101,6 @@ COPY --from=go-builder /app/bin/* .
 COPY --from=cmake-builder /app/bin/* .
 COPY --from=rust-builder /app/bin/* .
 
-RUN wget https://raw.githubusercontent.com/Psiphon-Labs/psiphon-tunnel-core-binaries/refs/heads/master/linux/psiphon-tunnel-core-x86_64 && \
-    chmod 755 psiphon-tunnel-core-x86_64
-
 # Add /app to PATH
 ENV PATH="/app:${PATH}"
 
@@ -100,4 +108,3 @@ ENV PATH="/app:${PATH}"
 EXPOSE 8080
 
 ENTRYPOINT []
-
