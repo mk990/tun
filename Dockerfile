@@ -1,5 +1,5 @@
 # Build the Go app
-FROM golang:1.24-alpine AS go-builder
+FROM golang:1.26-alpine AS go-builder
 
 # Install git
 RUN apk add --no-cache git
@@ -30,6 +30,11 @@ RUN git clone https://github.com/net2share/vaydns.git && \
     cd ../vaydns-client && \
     go build && \
     mv vaydns-client /app/bin/vaydns-client
+
+RUN git clone https://github.com/masterking32/MasterDnsVPN.git && \
+    cd MasterDnsVPN  && \
+    go build -o /app/bin/masterdnsvpn-client ./cmd/client && \
+    go build -o /app/bin/masterdnsvpn-server ./cmd/server
 
 # Build cmake
 FROM debian:trixie-slim AS cmake-builder
