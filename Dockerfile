@@ -23,13 +23,13 @@ RUN git clone https://github.com/Diniboy1123/usque.git && \
     go build -o usque -ldflags="-s -w" . && \
     mv usque /app/bin/usque
 
-RUN git clone https://repo.or.cz/dnstt.git && \
-    cd dnstt/dnstt-server && \
+RUN git clone https://github.com/net2share/vaydns.git && \
+    cd vaydns/vaydns-server && \
     go build && \
-    mv dnstt-server /app/bin/dnstt-server && \
-    cd ../dnstt-client && \
+    mv vaydns-server /app/bin/vaydns-server && \
+    cd ../vaydns-client && \
     go build && \
-    mv dnstt-client /app/bin/dnstt-client
+    mv vaydns-client /app/bin/vaydns-client
 
 # Build cmake
 FROM debian:trixie-slim AS cmake-builder
