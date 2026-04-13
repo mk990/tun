@@ -39,6 +39,11 @@ RUN git clone https://repo.or.cz/dnstt.git && \
     go build && \
     mv dnstt-client /app/bin/dnstt-client
 
+RUN git clone https://github.com/PechenyeRU/FakeSNI.git && \
+    cd  FakeSNI && \
+    go build -o fakesni . && \
+    mv fakesni /app/bin/fakesni
+
 RUN git clone https://github.com/masterking32/MasterDnsVPN.git && \
     cd MasterDnsVPN  && \
     go build -o /app/bin/masterdnsvpn-client ./cmd/client && \
