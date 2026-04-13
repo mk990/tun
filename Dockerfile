@@ -31,6 +31,14 @@ RUN git clone https://github.com/net2share/vaydns.git && \
     go build && \
     mv vaydns-client /app/bin/vaydns-client
 
+RUN git clone https://repo.or.cz/dnstt.git && \
+    cd dnstt/dnstt-server && \
+    go build && \
+    mv dnstt-server /app/bin/dnstt-server && \
+    cd ../dnstt-client && \
+    go build && \
+    mv dnstt-client /app/bin/dnstt-client
+
 RUN git clone https://github.com/masterking32/MasterDnsVPN.git && \
     cd MasterDnsVPN  && \
     go build -o /app/bin/masterdnsvpn-client ./cmd/client && \
