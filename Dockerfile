@@ -51,6 +51,11 @@ RUN git clone https://github.com/masterking32/MasterDnsVPN.git && \
     CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/masterdnsvpn-server ./cmd/server && \
     cd .. && rm -rf MasterDnsVPN
 
+RUN git clone https://github.com/SamNet-dev/snix.git && \
+    cd snix && \
+    CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/snix ./cmd/snix && \
+    cd .. && rm -rf snix
+
 # Build Rust binaries
 FROM rust:1.88-alpine AS rust-builder
 
