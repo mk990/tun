@@ -1,59 +1,63 @@
-# Build the Go app
+# Build Go binaries
 FROM golang:1.26-alpine AS go-builder
 
-# Install git
 RUN apk add --no-cache git
 
-# Set working directory
 WORKDIR /app
 RUN mkdir /app/bin
 
-# Clone the repo
 RUN git clone https://github.com/musixal/backhaul.git && \
     cd backhaul && \
-    go build -o /app/bin/backhaul
+    CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/backhaul && \
+    cd .. && rm -rf backhaul
 
 RUN git clone https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird.git && \
     cd lyrebird && \
-    CGO_ENABLED=0 go build -ldflags="-X main.lyrebirdVersion=0.6.1" ./cmd/lyrebird && \
-    mv lyrebird /app/bin/lyrebird
+    CGO_ENABLED=0 go build -ldflags="-s -w -X main.lyrebirdVersion=0.6.1" ./cmd/lyrebird && \
+    mv lyrebird /app/bin/lyrebird && \
+    cd .. && rm -rf lyrebird
 
 RUN git clone https://github.com/Diniboy1123/usque.git && \
     cd usque && \
-    go build -o usque -ldflags="-s -w" . && \
-    mv usque /app/bin/usque
+    CGO_ENABLED=0 go build -o /app/bin/usque -ldflags="-s -w" . && \
+    cd .. && rm -rf usque
 
 RUN git clone https://github.com/net2share/vaydns.git && \
     cd vaydns/vaydns-server && \
-    go build && \
+    CGO_ENABLED=0 go build -ldflags="-s -w" && \
     mv vaydns-server /app/bin/vaydns-server && \
     cd ../vaydns-client && \
-    go build && \
-    mv vaydns-client /app/bin/vaydns-client
+    CGO_ENABLED=0 go build -ldflags="-s -w" && \
+    mv vaydns-client /app/bin/vaydns-client && \
+    cd ../.. && rm -rf vaydns
 
 RUN git clone https://repo.or.cz/dnstt.git && \
     cd dnstt/dnstt-server && \
-    go build && \
+    CGO_ENABLED=0 go build -ldflags="-s -w" && \
     mv dnstt-server /app/bin/dnstt-server && \
     cd ../dnstt-client && \
-    go build && \
-    mv dnstt-client /app/bin/dnstt-client
+    CGO_ENABLED=0 go build -ldflags="-s -w" && \
+    mv dnstt-client /app/bin/dnstt-client && \
+    cd ../.. && rm -rf dnstt
 
 RUN git clone https://github.com/selfishblackberry177/sni-spoof.git && \
     cd sni-spoof && \
-    go build -o sni-spoof . && \
-    mv sni-spoof /app/bin/sni-spoof
+    CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/sni-spoof . && \
+    cd .. && rm -rf sni-spoof
 
 RUN git clone https://github.com/masterking32/MasterDnsVPN.git && \
-    cd MasterDnsVPN  && \
-    go build -o /app/bin/masterdnsvpn-client ./cmd/client && \
-    go build -o /app/bin/masterdnsvpn-server ./cmd/server
+    cd MasterDnsVPN && \
+    CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/masterdnsvpn-client ./cmd/client && \
+    CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/masterdnsvpn-server ./cmd/server && \
+    cd .. && rm -rf MasterDnsVPN
 
-# Build cmake
+# Build cmake-based binaries
 FROM debian:trixie-slim AS cmake-builder
 
 RUN apt-get update && \
-    apt-get install -y git curl cmake ninja-build build-essential libssl-dev zlib1g-dev
+    apt-get install -y --no-install-recommends \
+    git curl cmake ninja-build build-essential libssl-dev zlib1g-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 RUN mkdir /app/bin
@@ -66,22 +70,20 @@ RUN git clone https://github.com/radkesvat/WaterWall.git && \
     -DCMAKE_C_FLAGS="-static" \
     -DCMAKE_CXX_FLAGS="-static" && \
     cmake --build build && \
-    mv build/Waterwall /app/bin
+    mv build/Waterwall /app/bin && \
+    cd .. && rm -rf WaterWall
 
-
+# Build Rust binaries
 FROM rust:1.88-alpine AS rust-builder
 
-# Install dependencies
 RUN apk add --no-cache bash git musl-dev openssl-dev openssl-libs-static pkgconf cmake build-base
 
 WORKDIR /app
 RUN mkdir /app/bin
 
-# Enable static OpenSSL linking
 ENV OPENSSL_STATIC=1
 ENV OPENSSL_DIR=/usr
 
-# Build slipstream
 RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     cd slipstream-rust && \
     git submodule update --init --recursive && \
@@ -90,32 +92,34 @@ RUN git clone https://github.com/Mygod/slipstream-rust.git && \
     mv target/x86_64-unknown-linux-musl/release/slipstream-client /app/bin && \
     cd .. && rm -rf slipstream-rust
 
-# Build rstun
 RUN git clone https://github.com/neevek/rstun.git && \
     cd rstun && \
     cargo build --target x86_64-unknown-linux-musl --all-features --release && \
     mv target/x86_64-unknown-linux-musl/release/rstun /app/bin && \
     cd .. && rm -rf rstun
 
-# Run the app
-FROM alpine:latest
+# Download pre-built binaries
+FROM alpine:3.21 AS downloader
 
-# Set working directory
+RUN apk add --no-cache wget ca-certificates && \
+    wget -O /psiphon-tunnel-core-x86_64 \
+    https://raw.githubusercontent.com/Psiphon-Labs/psiphon-tunnel-core-binaries/refs/heads/master/linux/psiphon-tunnel-core-x86_64 && \
+    chmod 755 /psiphon-tunnel-core-x86_64
+
+# Final image
+FROM alpine:3.21
+
+RUN apk add --no-cache ca-certificates
+
 WORKDIR /app
 
-# Copy the built binary from builder stage
 COPY --from=go-builder /app/bin/* .
 COPY --from=cmake-builder /app/bin/* .
 COPY --from=rust-builder /app/bin/* .
+COPY --from=downloader /psiphon-tunnel-core-x86_64 .
 
-RUN wget https://raw.githubusercontent.com/Psiphon-Labs/psiphon-tunnel-core-binaries/refs/heads/master/linux/psiphon-tunnel-core-x86_64 && \
-    chmod 755 psiphon-tunnel-core-x86_64
-
-# Add /app to PATH
 ENV PATH="/app:${PATH}"
 
-# Expose port (update to match the app's port if needed)
 EXPOSE 8080
 
 ENTRYPOINT []
-
