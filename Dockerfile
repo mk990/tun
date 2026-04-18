@@ -51,28 +51,6 @@ RUN git clone https://github.com/masterking32/MasterDnsVPN.git && \
     CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/masterdnsvpn-server ./cmd/server && \
     cd .. && rm -rf MasterDnsVPN
 
-# Build cmake-based binaries
-FROM debian:trixie-slim AS cmake-builder
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates git curl cmake ninja-build build-essential libssl-dev zlib1g-dev && \
-    rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-RUN mkdir /app/bin
-
-RUN git clone https://github.com/radkesvat/WaterWall.git && \
-    cd WaterWall && \
-    cmake -B build \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_EXE_LINKER_FLAGS="-static" \
-    -DCMAKE_C_FLAGS="-static" \
-    -DCMAKE_CXX_FLAGS="-static" && \
-    cmake --build build && \
-    mv build/Waterwall /app/bin && \
-    cd .. && rm -rf WaterWall
-
 # Build Rust binaries
 FROM rust:1.88-alpine AS rust-builder
 
@@ -114,7 +92,6 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 COPY --from=go-builder /app/bin/* .
-COPY --from=cmake-builder /app/bin/* .
 COPY --from=rust-builder /app/bin/* .
 COPY --from=downloader /psiphon-tunnel-core-x86_64 .
 
