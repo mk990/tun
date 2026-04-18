@@ -56,7 +56,7 @@ FROM debian:trixie-slim AS cmake-builder
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    git curl cmake ninja-build build-essential libssl-dev zlib1g-dev && \
+    ca-certificates git curl cmake ninja-build build-essential libssl-dev zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
