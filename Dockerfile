@@ -45,11 +45,6 @@ RUN git clone https://github.com/selfishblackberry177/sni-spoof.git && \
     CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/sni-spoof . && \
     cd .. && rm -rf sni-spoof
 
-RUN git clone https://github.com/masterking32/MasterDnsVPN.git && \
-    cd MasterDnsVPN && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/masterdnsvpn-client ./cmd/client && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/bin/masterdnsvpn-server ./cmd/server && \
-    cd .. && rm -rf MasterDnsVPN
 
 RUN git clone https://github.com/SamNet-dev/snix.git && \
     cd snix && \
